@@ -11,87 +11,126 @@ class ArticleTableViewController: UITableViewController {
         case all
     }
     
-    var articles:[Article] = [
-        Article(
-            name: "Lifehacker.com",
-            author: "Daniel Oropeza",
-            title: "US law enforcement has warrantless access to many money transfers",
-            description: "Your international money transfers might not be as discreet as you think. Senator Ron Wyden and The Wall Street Journal have learned that US law enforcement can access details of money transfers without a warrant through an obscure surveillance program the Ar…",
-            url: "https://www.engadget.com/us-money-transfer-mass-surveillance-trac-183552282.html",
-            urlToImage: "https://s.yimg.com/os/creatr-uploaded-images/2023-01/10302b40-9755-11ed-8bfd-2c415af0c89b",
-            publishedAt: "2023-01-18T18:35:52Z"
-        ),
-        Article(
-            name: "Lifehacker.com",
-            author: "Daniel Oropeza",
-            title: "US law enforcement has warrantless access to many money transfers",
-            description: "Your international money transfers might not be as discreet as you think. Senator Ron Wyden and The Wall Street Journal have learned that US law enforcement can access details of money transfers without a warrant through an obscure surveillance program the Ar…",
-            url: "https://www.engadget.com/us-money-transfer-mass-surveillance-trac-183552282.html",
-            urlToImage: "https://s.yimg.com/os/creatr-uploaded-images/2023-01/10302b40-9755-11ed-8bfd-2c415af0c89b",
-            publishedAt: "2023-01-18T18:35:52Z"
-        )
-    ]
-    
-    
-//articles
+    var articles: [Article] = []
+    lazy var dataSource = configureDataSource()
     
     override func viewDidLoad() {
-        super.viewDidLoad()
-        tableView.dataSource = dataSource
+        fetchArticles()
         
+        //        waiting for api response, usually takes 1-2 seconds (obviously there is a better way to solve this (will be fixed later :) ))
+        while articles.count<1{
+            sleep(1)
+        }
+        
+        super.viewDidLoad()
+        
+        tableView.dataSource = dataSource
         tableView.separatorStyle = .none
+        
         var snapshot = NSDiffableDataSourceSnapshot<Section, Article>()
         snapshot.appendSections([.all])
         snapshot.appendItems(articles, toSection: .all)
         dataSource.apply(snapshot, animatingDifferences: false)
     }
     
-    lazy var dataSource = configureDataSource()
-    
-    func configureDataSource() -> UITableViewDiffableDataSource<Section, Article>{
-        let cellIdentifier = "articlecell"
-
-        let dataSource = UITableViewDiffableDataSource<Section, Article>(
-            tableView: tableView,
-            cellProvider: { tableView, indexPath, article in
-                let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath) as! ArticleTableViewCell
-                
-                
-                let urlToImage = URL(string: String(article.urlToImage))!
-                cell.thumbnailImageView.image = UIImage(named: "prototype.jpg")
-                
-                DispatchQueue.global().async {
-                    // Fetch Image Data
-                    print("In async...")
-                    if let data = try? Data(contentsOf: urlToImage) {
-                        DispatchQueue.main.async {
-                            // Create Image and Update Image View
-                            print("Download...")
-                            cell.thumbnailImageView.image = UIImage(data: data)
-                            print("Succeed")
+    func fetchArticles(){
+        let urlRequest = URLRequest(url: Constants.API_URL!)
+        
+        let task = URLSession.shared.dataTask(with: urlRequest) { (data, response, error) in
+            if error != nil{
+                print(error!)
+                return
+            }
+            self.articles = [Article]()
+            do{
+                let json = try JSONSerialization.jsonObject(with: data!, options: .mutableContainers) as! [String : AnyObject]
+                if let articlesFromJson = json["articles"] as? [[String : AnyObject]]{
+                    for articleFromJson in articlesFromJson {
+                        let article = Article()
+                        if
+                            //                            let name = articleFromJson["name"] as? String,
+                            let title = articleFromJson["title"] as? String,
+                            let author = articleFromJson["author"] as? String,
+                            let desc = articleFromJson["description"] as? String,
+                            let url = articleFromJson["url"] as? String,
+                            let urlToImage = articleFromJson["urlToImage"] as? String,
+                            let publishedAt = articleFromJson["publishedAt"] as? String,
+                            let content = articleFromJson["content"] as? String
+                        {
+                            //                            article.name = name
+                            //                            print(name)
+                            article.title = title
+                            article.author = author
+                            article.desc = desc
+                            article.url = url
+                            article.urlToImage = urlToImage
+                            article.publishedAt = publishedAt
+                            article.content = content
+                            
                         }
+                        self.articles.append(article)
                     }
                 }
                 
-                cell.nameLabel.text = article.name
-                cell.authorLabel.text = article.author
-                cell.titleLabel.text = article.title
+            } catch let error{
+                print(error)
+            }
+        }
+        task.resume()
+    }
+    
+    func configureDataSource() -> UITableViewDiffableDataSource<Section, Article>{
+        let cellIdentifier = "articlecell"
+        let dataSource = UITableViewDiffableDataSource<Section, Article>(
+            tableView: tableView,
+            cellProvider: { tableView, indexPath, articles in
+                let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath) as! ArticleTableViewCell
+                
+//                TODO: Save each image to cache
+                if articles.urlToImage != nil {
+                    let urlToImage = URL(string: String(articles.urlToImage!))!
+                    
+                    cell.thumbnailImageView.image = UIImage(named: "prototype.jpg")
+                    
+                    //                Download image for each article from URL
+                    DispatchQueue.global().async {
+                        // Fetch Image Data
+                        if let data = try? Data(contentsOf: urlToImage) {
+                            DispatchQueue.main.async {
+                                cell.thumbnailImageView.image = UIImage(data: data)
+                            }
+                        }
+                    }
+                } else {
+                    cell.thumbnailImageView.image = UIImage(named: "prototype.jpg")
+                }
+                
+                //                cell.nameLabel.text = articles.name
+                cell.authorLabel.text = articles.author
+                cell.titleLabel.text = articles.title
                 cell.titleLabel.numberOfLines = 2
-                cell.descriptionLabel.text = article.description
+                cell.descriptionLabel.text = articles.desc
                 //                cell.descriptionLabel.lineBreakMode = .byCharWrapping
                 cell.descriptionLabel.numberOfLines = 3
-                cell.publishedAtLabel.text = formatDate(date: article.publishedAt)
+                
+                if articles.publishedAt == nil{
+                    cell.publishedAtLabel.text = ""
+                } else {
+                    cell.publishedAtLabel.text = formatDate(date: articles.publishedAt!)
+                }
+                
                 return cell
             }
         )
         return dataSource
     }
     
+    //    Pass url data of the selected article to ArticleDetailViewController
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "showArticleDetail" {
             if let indexPath = tableView.indexPathForSelectedRow{
                 let destinationController = segue.destination as! ArticleDetailViewController
-                destinationController.urlFromMainView = self.articles[indexPath.row].url
+                destinationController.urlFromMainView = self.articles[indexPath.row].url!
             }
         }
     }

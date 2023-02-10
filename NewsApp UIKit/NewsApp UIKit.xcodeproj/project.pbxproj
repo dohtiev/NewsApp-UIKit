@@ -68,15 +68,15 @@
 			children = (
 				45C5746F29954FFA0097EF0B /* Controllers */,
 				45B97ED12995456A00AB4E0B /* Functions */,
+				45C5747629968F640097EF0B /* Models */,
 				4547E595299456920069280E /* AppDelegate.swift */,
-				4547E597299456920069280E /* SceneDelegate.swift */,
-				4547E5AB29945A880069280E /* Article.swift */,
-				4547E59B299456920069280E /* Main.storyboard */,
-				4547E59E299456930069280E /* Assets.xcassets */,
-				4547E5A0299456930069280E /* LaunchScreen.storyboard */,
-				4547E5A3299456930069280E /* Info.plist */,
-				4547E5A9299459A90069280E /* Constants.swift */,
 				4547E5B129950A850069280E /* ArticleTableViewCell.swift */,
+				4547E5A9299459A90069280E /* Constants.swift */,
+				4547E597299456920069280E /* SceneDelegate.swift */,
+				4547E59B299456920069280E /* Main.storyboard */,
+				4547E5A0299456930069280E /* LaunchScreen.storyboard */,
+				4547E59E299456930069280E /* Assets.xcassets */,
+				4547E5A3299456930069280E /* Info.plist */,
 			);
 			path = "NewsApp UIKit";
 			sourceTree = "<group>";
@@ -96,6 +96,14 @@
 				4547E5AF299505B30069280E /* ArticleTableViewController.swift */,
 			);
 			path = Controllers;
+			sourceTree = "<group>";
+		};
+		45C5747629968F640097EF0B /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				4547E5AB29945A880069280E /* Article.swift */,
+			);
+			path = Models;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */

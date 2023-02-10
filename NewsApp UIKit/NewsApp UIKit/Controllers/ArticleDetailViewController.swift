@@ -9,6 +9,8 @@ import WebKit
 class ArticleDetailViewController: UIViewController, WKNavigationDelegate {
 
     var webView: WKWebView!
+    
+//    Getting the url of the selected article via segue
     var urlFromMainView: String = ""
     
     override func loadView(){
@@ -23,18 +25,5 @@ class ArticleDetailViewController: UIViewController, WKNavigationDelegate {
         let url = URL(string: urlFromMainView)!
         webView.load(URLRequest(url: url))
         webView.allowsBackForwardNavigationGestures = true
-        // Do any additional setup after loading the view.
     }
-    
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
-    }
-    */
-
 }

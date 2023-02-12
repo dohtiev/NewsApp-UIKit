@@ -6,7 +6,7 @@
 import UIKit
 
 class ArticleTableViewController: UITableViewController {
-    
+
     enum Section{
         case all
     }
@@ -90,6 +90,7 @@ class ArticleTableViewController: UITableViewController {
                 if articles.urlToImage != nil {
                     let urlToImage = URL(string: String(articles.urlToImage!))!
                     
+//                    Set black image while request is in progress
                     cell.thumbnailImageView.image = UIImage(named: "prototype.jpg")
                     
                     //                Download image for each article from URL

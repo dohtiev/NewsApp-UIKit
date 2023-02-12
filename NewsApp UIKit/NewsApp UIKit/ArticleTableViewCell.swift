@@ -7,7 +7,6 @@ import UIKit
 
 class ArticleTableViewCell: UITableViewCell {
 
-    @IBOutlet var nameLabel: UILabel!
     @IBOutlet var authorLabel: UILabel!
     @IBOutlet var titleLabel: UILabel!
     @IBOutlet var descriptionLabel: UILabel!
